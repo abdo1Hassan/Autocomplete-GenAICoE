@@ -1,7 +1,5 @@
-Flask
-pandas
+fastapi
 fuzzywuzzy
-scikit-learn
-numpy
-torch
-transformers
+rapidfuzz
+pydantic
+pydantic_settings
