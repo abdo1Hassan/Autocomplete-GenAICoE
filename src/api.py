@@ -35,7 +35,7 @@ async def initialise():
     fuzzy_matcher = FuzzyMatcher(queries)
 
     for query in queries:
-        trie.insert(query)
+        trie.insert(query[0], query[1])
 
     GlobalState.initialize(trie=trie, fuzzy_matcher=fuzzy_matcher)
 
@@ -61,8 +61,22 @@ async def autocomplete(
         suggestions = list(set(trie_suggestions + fuzzy_suggestions))[
             : settings.MAX_SUGGESTIONS
         ]
-        print(suggestions)
-        return JSONResponse(content={"suggestions": suggestions})
+
+        category, suggestion = [],[]
+        for item in suggestions:
+            if item[1] == "category":
+                response = {
+                    "label": item[0],
+                    "url": "/search?Ntt=" + item[0],
+                }
+                category.append(response)
+            else:
+                response = {
+                    "label": item[0],
+                    "url": "/search?Ntt=" + item[0],
+                }
+                suggestion.append(response)
+        return JSONResponse(content={"category": category, "suggestion": suggestion})
 
     except Exception as e:
         logger.error(f"Error in autocomplete: {e}")

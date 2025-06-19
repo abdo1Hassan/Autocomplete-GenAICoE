@@ -2,19 +2,21 @@ class TrieNode:
     def __init__(self):
         self.children = {}
         self.is_end_of_query = False
+        self.query_type = None
 
 
 class Trie:
     def __init__(self):
         self.root = TrieNode()
 
-    def insert(self, query):
+    def insert(self, query, query_type):
         node = self.root
         for char in query:
             if char not in node.children:
                 node.children[char] = TrieNode()
             node = node.children[char]
         node.is_end_of_query = True
+        node.query_type = query_type
 
     async def autocomplete(self, prefix):
         node = self.root
@@ -23,13 +25,13 @@ class Trie:
                 return []
             node = node.children[char]
         suggestions = await self._find_suggestions(node, prefix)
-        valid_suggestions = [s for s in suggestions if s.strip() == s]
+        valid_suggestions = [s for s in suggestions if s[0].strip() == s[0]]
         return valid_suggestions[:3]
 
     async def _find_suggestions(self, node, prefix):
         suggestions = []
         if node.is_end_of_query:
-            suggestions.append(prefix)
+            suggestions.append((prefix, node.query_type))
         for char, child_node in node.children.items():
             suggestions.extend(await self._find_suggestions(child_node, prefix + char))
         return suggestions[:3]
@@ -40,7 +42,7 @@ class Trie:
     async def _collect_words(self, node, prefix):
         words = []
         if node.is_end_of_query:
-            words.append(prefix)
+            words.append((prefix, node.query_type))
         for char, child_node in node.children.items():
             words.extend(await self._collect_words(child_node, prefix + char))
         return words
